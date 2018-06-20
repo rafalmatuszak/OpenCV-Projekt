@@ -22,9 +22,12 @@ short ycount = 0;
 //text file for writing Cmotion
 //plik tekstowy do zapisywania wspolczynnika C
 ofstream coeff("motion_coeff.txt");
+ofstream stdevs("stanard_deviations.txt");
 
 //MOG2
 Ptr<BackgroundSubtractorMOG2> pMOG2 = createBackgroundSubtractorMOG2(500, 64);
+
+double odchylenie(vector<double> v);
 
 int main()
 {
@@ -39,6 +42,11 @@ int main()
 	//VideoCapture cap;
 
 	//cap.open(0);
+
+	//wektory do odchylen
+	vector<double> angles;
+	vector<double> a_to_b;
+	vector<double> ycoord;
 
 	while ((char)key != 'q' && (char)key != 27) {
 		key = 0;
@@ -119,16 +127,14 @@ int main()
 		}
 
 		//dopiero tu sprawdzamy drugi krok algorytmu
-		//wektory do odchylen
-		vector<double> angles;
-		vector<double> a_to_b;
-		vector<double> ycoord;
-
-		double mean_angle;
-		double mean_a_to_b;
 
 		angles.push_back(ell.angle);
 		a_to_b.push_back(ell.size.width / ell.size.height);
+	
+		if(isnan(a_to_b[0])) {
+			a_to_b.erase(a_to_b.begin());
+		}
+
 		if (ycount >= 10){
 			ycount = 0;
 			ycoord.clear();
@@ -136,21 +142,29 @@ int main()
 		ycoord.push_back(ell.center.y);
 		ycount += 1;
 
+		double std_angle = 0.0;
+		double std_a_to_b = 0.0;
 
-		//sprawdzenie warunkow algorytmu
-		if (mot_coeff > 18) {
-			meanStdDev(angles,)
+		if (angles.size() > 1 & a_to_b.size() > 1) {
+			std_angle = odchylenie(angles);
+			std_a_to_b = odchylenie(a_to_b);
 		}
 
-
-
+		//sprawdzenie warunkow algorytmu
+		if (mot_coeff > 0.12) {
+			stdevs << "Std_angle: " << std_angle << ", std_a_to_: b" << std_a_to_b << "\n";
+		}
 
 
 
 		//wypisanie na ekran
 		stringstream ss, ss1, ss2;
 		ss << "Motion coeff: " << mot_coeff;
+		ss1 << "Dev theta: " << std_angle;
+		ss2 << "Dev atob: " << std_angle;
 		putText(frame, ss.str(), Point(10, 10), FONT_HERSHEY_DUPLEX, 0.5, Scalar(0, 0, 255), 1, 8);
+		putText(frame, ss1.str(), Point(10, 30), FONT_HERSHEY_DUPLEX, 0.5, Scalar(0, 0, 255), 1, 8);
+		putText(frame, ss2.str(), Point(10, 50), FONT_HERSHEY_DUPLEX, 0.5, Scalar(0, 0, 255), 1, 8);
 
 		//writing down the Cmotion to file
 		coeff << "Motion coefficient at frame " << frames << ": " << mot_coeff << "\n";
@@ -167,4 +181,19 @@ int main()
 	cap.release();
 	cv::destroyAllWindows();
 	return 0;
+}
+
+
+//odchylenie
+double odchylenie(vector<double> v)
+{
+	int sum = 0;
+	for (int i = 0; i<v.size(); i++)
+		sum += v[i];
+	double ave = sum / v.size();
+
+	double E = 0;
+	for (int i = 0; i<v.size(); i++)
+		E += (v[i] - ave)*(v[i] - ave);
+	return sqrt(1 / v.size()*E);
 }
