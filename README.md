@@ -28,3 +28,7 @@ Same jednak wartości nie opsisują w czasie zmian badanej sylwetki. W tym celu,
 * współrzędnej y środka elipsy.
 
 Podane powyżej zależności wiąże poniższy schemat:
+
+![Schemat](https://github.com/rafalmatuszak/OpenCV-Projekt/blob/master/opencv_project/Schemat.PNG)
+
+W dużym uproszczeniu: sprawdzamy na początku wartość współczynnika ruchu. Jeśli jest on duży, analizujemy wykrytą sylwetkę przez sprawdzenie odchyleń standardowych kątą i stosunku a/b elipsy. Jeśli i te wartości są wysokie, należy sprawdzić czy ostatni parametr, odchylenie standardowe współrzędnej y środka elipsy, jest wysoki. Jeśli tak ( i spełnione są poprzednie warunku), można stwierdzić, że wykryto upadek.
