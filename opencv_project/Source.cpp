@@ -136,7 +136,7 @@ int main()
 			a_to_b.push_back(ell.size.width / ell.size.height);
 			
 			//dodanie do wektorow wartosci y
-			if (ycount >= 10) {
+			if (ycount >= 30) {
 				ycount = 0;
 				ycoord.clear();
 			}
@@ -168,7 +168,7 @@ int main()
 			dev_y << "Dev y: " << std_y;
 
 			if (fallDetect(mot_coeff, std_angle, std_a_to_b, std_y) == true) {
-				putText(frame, "FALL DETECTED", Point(frame.cols - 50,10), FONT_HERSHEY_DUPLEX, 0.5, Scalar(0, 255, 0), 1, 8);
+				putText(frame, "FALL DETECTED", Point(frame.cols - 100,10), FONT_HERSHEY_DUPLEX, 0.5, Scalar(0, 255, 0), 1, 8);
 			}
 
 		}
