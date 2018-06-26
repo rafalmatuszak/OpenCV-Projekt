@@ -31,4 +31,35 @@ Podane powyżej zależności wiąże poniższy schemat:
 
 ![Schemat](https://github.com/rafalmatuszak/OpenCV-Projekt/blob/master/opencv_project/Schemat.PNG)
 
-W dużym uproszczeniu: sprawdzamy na początku wartość współczynnika ruchu. Jeśli jest on duży, analizujemy wykrytą sylwetkę przez sprawdzenie odchyleń standardowych kątą i stosunku a/b elipsy. Jeśli i te wartości są wysokie, należy sprawdzić czy ostatni parametr, odchylenie standardowe współrzędnej y środka elipsy, jest wysoki. Jeśli tak ( i spełnione są poprzednie warunku), można stwierdzić, że wykryto upadek.
+W dużym uproszczeniu: sprawdzamy na początku wartość współczynnika ruchu. Jeśli jest on duży, analizujemy wykrytą sylwetkę przez sprawdzenie odchyleń standardowych kątą i stosunku a/b elipsy. Jeśli i te wartości są wysokie, należy sprawdzić czy ostatni parametr, odchylenie standardowe współrzędnej y środka elipsy, jest wysoki. Jeśli tak ( i spełnione są poprzednie warunki), można stwierdzić, że wykryto upadek.
+
+### Środowisko realizacji
+
+Powyższy projekt wykonano w języku C++, przy użyciu biblioteki OpenCV. Biblioteka ta, co warto zauważyć, choć ma bogaty zestaw algorytmow i bibliotek do operowania na obrazach, nie zawierała pewnych elementow biblioteki do badania przeplywu optycznego (OptFlow), który wykorzystywany jest do wyznaczania wspoomnianej wczesniej histori ruchu sekwencji. Autorzy OpenCV udostepnili jednak te (i wiele innych) dodatkowy moduly, nazywajac je **opencv_contrib** (ktore mozemy znalezc na repozytorium projektu  - [tutaj](https://github.com/opencv/opencv_contrib)).
+
+W celu "ulepszenia" pierwotnej biblioteki OpenCV, autor projektu, wspierając się licznymi poradnikami znalezionymi w sieci i wspomnianym wczesniej repozytorium, skompilowal wlasna wersje biblioteki OpenCV, zawierajaca bogaty zakres dodatkowych modulow, m.in.:
+* OptFlow,
+* Text,
+* Fuzzy image processing,
+i wiele innych. 
+
+### Realizacja
+
+Sposob implementacji algorytmu zostal przedstawiony w pliku `Source.cpp`.
+
+Jak mozna zauwazyc, glowny trzon algorytmu osadzony jest w funkcji `main`. W niej odbywają sie kolejno:
+1. podstawowe operacje morfologiczne na obrazie,
+2. utworzenie maski `pMOG2` (wyznaczamy w ten sposob obraz pierwszoplanowy - poruszającą sie postać),
+3. obliczenie MHI (Motion History Image) - historii przebiegu ruchu,
+4. obliczenie `mot_coeff` - wspolczynnika ruchu,
+5. wyznaczenie konturów w obrazie oraz wyłuskanie największego konturu (ludzkiej sylwetki),
+6. na podstawie wektora konturów, wyznaczenie (od drugiej klatki) odchylenia standardowego kata elipsy, stosunku a/b oraz wspolrzednej y srodka elipsy,
+7. przekazanie wartosci `mot_coeff` oraz wartosci odchyleń standardowych do funkcji `fallDetect`, która sprawdza warunki algorytmu i zwraca wartosć logiczną `true`, gdy wykryto upadek lub `false`, gdy upadku nie ma
+
+W celu lepszej obserwacji obliczanych wartosci, wiekszosc wyznaczanych danych wyswietlana jest na bieżąco na obrazie oraz zapisywana do pliku CSV `stddevs2.csv`. Umożliwiło to autorowi obserwację poprawnosci obliczanych parametrow.
+
+### Wnioski
+
+Zrealizowany projekt bada zachowanie elipsy, kreslonej  wokół sylwetki człowieka z sekwencji wideo. Na podstawie tego badania (wyznaczonych wartosci odchylen standardowych i współczynnika ruchu), stwierdza on, czy wykryto upadek.
+Ze względu na trudnosci związane ze znalezieniem dobrego materiału wideo do analizy oraz niemożnosci zrealizowania własnego nagrania, autor dokonywał testów przede wszystkim na jednej sekwencji, dobrze realizującej założenia zadania. Mimo tego jednak, współczynniki odniesienia (odchylenia i współczynnik ruchu), do których porównywane są badane wartosci, odbiegaja od proponowanych przez autorów artykułów podanych powyżej. Wynikać to może z braku normalizacji lub niedostatecznego przetworzenia wstepnego obrazu.
+Dlatego też, wartosci odniesienia zostały wyznaczone empirycznie, na podstawie obserwacji.
